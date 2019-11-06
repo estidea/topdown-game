@@ -1,0 +1,476 @@
+'=================== MAIN SUBS  ==============
+'=================== MAIN SUBS  ==============
+'=================== MAIN SUBS  ==============
+Sub setup
+  notEnd = "true"
+  width = 800
+  height = 680
+  fps = 50
+  
+  spiders = ""
+  indexSpider = 1
+  
+  score = 0
+  money = 0
+  ' Массив пауз
+  pauses[1] = 4
+  pauses[2] = 5
+  pauses[3] = 6
+  pauses[4] = 7
+  randomPause = pauses[Math.GetRandomNumber(4)]
+  
+  directory = Program.Directory
+  
+  GraphicsWindow.Width = width
+  GraphicsWindow.Height = height
+  GraphicsWindow.CanResize = "false"
+  GraphicsWindow.BackgroundColor = "#472D3C"
+  
+  initWorld()
+  createPlayer()
+  createEnemySpider()
+  updateScore()
+  updateMoney()
+  initMenu()
+EndSub
+
+Sub loop
+  checkPlayerEdjes()
+  checkCollisionPlayerDiamond()
+  checkCollisionPlayerFire()
+  moveBullet()
+  bulletLife()
+  moveSpiders()
+  checkEdjesSpiders()
+  checkCollisionBulletSpider()
+  checkCollisionPlayerSpider()
+  checkCollisionSpiderDiamond()
+  
+  frames = frames+1
+  If Math.Remainder(frames,randomPause*fps) = 0 Then
+    createEnemySpider()
+    randomPause = pauses[Math.GetRandomNumber(4)]
+  EndIf
+  If Math.Remainder(frames,randomPause*2*fps) = 0 Then
+    x = leftBorder + Math.GetRandomNumber(width-80-rightBorder)
+    y = topBorder + Math.GetRandomNumber(height-80-bottomBorder)
+    createDiamond()
+    indexDiamond = indexDiamond + 1
+  EndIf
+  If Math.Remainder(frames,randomPause*3*fps) = 0 Then
+    randomDiamondIndex = Math.GetRandomNumber(Array.GetItemCount(diamonds))
+    diamonds[randomDiamondIndex]["collected"] = "false"
+    Shapes.ShowShape(diamonds[randomDiamondIndex]["diamond"])
+  EndIf
+EndSub
+
+
+'=================== EVENT LISTENERS  ==============
+'=================== EVENT LISTENERS  ==============
+'=================== EVENT LISTENERS  ==============
+GraphicsWindow.KeyDown = keyboardEvent
+
+Sub keyboardEvent
+  lastKey = GraphicsWindow.LastKey
+  If lastKey = "W" Then
+    playerY = playerY - playerSpdY
+    movePlayer()
+  ElseIf lastKey = "S" Then
+    playerY = playerY + playerSpdY
+    movePlayer()
+  ElseIf lastKey = "A" Then
+    playerX = playerX - playerSpdX
+    movePlayer()
+  ElseIf lastKey = "D" Then
+    playerX = playerX + playerSpdX
+    movePlayer()
+  EndIf
+EndSub
+
+GraphicsWindow.MouseDown = mouseEvent
+
+Sub mouseEvent
+  mouseX = GraphicsWindow.MouseX
+  mouseY = GraphicsWindow.MouseY
+  performAttack()
+EndSub
+
+'=================== SKILLS MENU ==============
+Sub initMenu
+  GraphicsWindow.BrushColor = "Black"
+  GraphicsWindow.PenColor = "Green"
+  GraphicsWindow.FontSize = 16
+  buyBulletBtn = Controls.AddButton("Buy bullet (-3)",20,620)
+  Controls.SetSize(buyBulletBtn,240,40)
+  increaseBulletSpeedBtn = Controls.AddButton("Bullet speed (-20)",280,620)
+  Controls.SetSize(increaseBulletSpeedBtn,240,40)
+  increaseBulletLifeBtn = Controls.AddButton("Bullet long (-20)",540,620)
+  Controls.SetSize(increaseBulletLifeBtn,240,40)
+EndSub
+
+Controls.ButtonClicked = whichBtn
+
+Sub whichBtn
+  clickedBtn = Controls.LastClickedButton
+  If clickedBtn = buyBulletBtn Then
+    ' buy bullet
+    If money >= 3 Then
+      money = money - 3
+      updateMoney()
+      bulletNumber = bulletNumber + 1
+      updateBullets()
+    Else 
+    EndIf
+  ElseIf clickedBtn = increaseBulletSpeedBtn Then
+    ' increase bullet speed
+    If money >= 20 Then
+      money = money - 20
+      updateMoney()
+      score = score+2
+      updateScore()
+      bulletSpeed = bulletSpeed+1
+    Else 
+    EndIf
+  ElseIf clickedBtn = increaseBulletLifeBtn Then
+    ' increase bullet life
+    If money >= 20 Then
+      money = money - 20
+      updateMoney()
+      score = score+2
+      updateScore()
+      bulletTimeOfLife = bulletTimeOfLife+0.4
+    Else 
+    EndIf
+  EndIf
+EndSub
+
+'=================== TEXT STATES (BULLETS, SCORE, MONEY)  ==============
+Sub updateScore
+  Shapes.HideShape(scoreText)
+  GraphicsWindow.FontSize = 20
+  GraphicsWindow.BrushColor = "White"
+  scoreText = Shapes.AddText("Score: " + score)
+  Shapes.Move(scoreText,10,5)
+  Shapes.ShowShape(scoreText)
+EndSub
+
+Sub updateMoney
+  Shapes.HideShape(moneyText)
+  GraphicsWindow.FontSize = 20
+  GraphicsWindow.BrushColor = "White"
+  moneyText = Shapes.AddText("$: " + money)
+  Shapes.Move(moneyText,120,5)
+  Shapes.ShowShape(moneyText)
+EndSub
+
+Sub updateBullets
+  Shapes.HideShape(bulletText)
+  GraphicsWindow.FontSize = 20
+  GraphicsWindow.BrushColor = "White"
+  bulletText = Shapes.AddText("Bullets: " + bulletNumber)
+  Shapes.Move(bulletText,230,5)
+  Shapes.ShowShape(bulletText)
+EndSub
+
+'=================== GAME WORLD  ==============
+'=================== GAME WORLD  ==============
+'=================== GAME WORLD  ==============
+Sub initWorld
+  topBorder = 40
+  leftBorder = 40
+  rightBorder = 40
+  bottomBorder = 120
+  worldImg = directory + "/world.png"
+  world = Shapes.AddImage(worldImg)
+  fillWorld()
+EndSub
+
+Sub fillWorld
+  indexFire = 1
+  indexDiamond = 1
+  fires = ""
+  diamonds = ""
+  x = 40
+  y = 40
+  For i=1 To 13
+    For j=1 To 18
+      If i=13 And j=18 Then
+      ElseIf i=1 And j=1 Then
+      Else
+        probability = Math.GetRandomNumber(100)
+        If probability <= 5 Then
+          ' fire
+          fillWorldImg = directory + "/objects/w11.png"
+          createFire()
+          indexFire = indexFire + 1
+        ElseIf probability > 5 And probability <= 8 Then
+          ' diamond
+          fillWorldImg = directory + "/objects/w10.png"
+          createDiamond()
+          indexDiamond = indexDiamond + 1
+        Else
+          ' ordinary ground
+          randomNum = Math.GetRandomNumber(9)
+          fillWorldImg = directory + "/objects/w" + randomNum + ".png"
+          fillWorldPart = Shapes.AddImage(fillWorldImg)
+          Shapes.Move(fillWorldPart,x,y)
+        EndIf
+      EndIf
+      x = x + 40
+    EndFor
+    x = 40
+    y = y + 40
+  EndFor
+EndSub
+  
+'=================== PLAYER  ==============
+'=================== PLAYER  ==============
+'=================== PLAYER  ==============
+Sub createPlayer
+  playerImg = directory + "/objects/player.png"
+  playerW = 40
+  playerH = 40
+  playerX = 40
+  playerY = 40 
+  playerAimAngle = 0
+  playerSpdY = 20
+  playerSpdX = 20
+  bulletNumber = 3
+  player = Shapes.AddImage(playerImg)
+  Shapes.Move(player,playerX,playerY)
+  
+  createBullet()
+  updateBullets()
+EndSub
+
+Sub movePlayer
+  Shapes.Move(player,playerX,playerY)
+EndSub
+
+Sub checkPlayerEdjes
+  If playerX > width-playerW-rightBorder Then
+    playerX = playerX - playerSpdX
+    movePlayer()
+  ElseIf playerX < leftBorder Then
+    playerX = playerX + playerSpdX
+    movePlayer()
+  EndIf
+  If playerY > height-playerH-bottomBorder Then
+    playerY = playerY - playerSpdY
+    movePlayer()
+  ElseIf playerY < topBorder Then
+    playerY = playerY + playerSpdY
+    movePlayer()
+  EndIf
+EndSub
+
+'=================== BULLET  ==============
+'=================== BULLET  ==============
+'=================== BULLET  ==============
+Sub createBullet
+  bulletX = playerX + playerW/2 - 5
+  bulletY = playerY + playerH/2 - 5
+  bulletW = 10
+  bulletH = 10
+  bulletTimeOfLife = 2
+  bulletSpeedX = 0
+  bulletSpeedY = 0
+  bulletSpeed = 3
+  bulletImg = directory + "/objects/bullet.png"
+  bullet = Shapes.AddImage(bulletImg)
+  Shapes.HideShape(bullet)
+  Shapes.Move(bullet,bulletX,bulletY)
+EndSub
+
+Sub performAttack
+  If bulletNumber >= 1 Then
+    bulletNumber = bulletNumber - 1
+    bulletIsFlying = "true"
+    bulletX = playerX + playerW/2 - 5
+    bulletY = playerY + playerH/2 - 5
+    bulletDuration = 0
+    Shapes.Move(bullet,bulletX,bulletY)
+    koeff = 90*100/150
+    diffX = mouseX - playerX
+    diffY = mouseY - playerY
+    If diffX > 0 Then
+      playerAimAngle = Math.ArcTan(diffY/diffX)*koeff
+    ElseIf diffX < 0 And diffY >= 0 Then
+      playerAimAngle = Math.ArcTan(diffY/diffX)*koeff + 180
+    ElseIf diffX < 0 And diffY < 0 Then
+      playerAimAngle = Math.ArcTan(diffY/diffX)*koeff - 180
+    EndIf
+    angle = playerAimAngle
+    
+    bulletSpeedX = Math.cos(angle/180*Math.Pi)*bulletSpeed
+    bulletSpeedY = Math.Sin(angle/180*Math.Pi)*bulletSpeed
+    Shapes.ShowShape(bullet)
+    updateBullets()
+   EndIf
+EndSub
+
+Sub moveBullet
+  bulletX = bulletX + bulletSpeedX
+  bulletY = bulletY + bulletSpeedY
+  Shapes.Move(bullet,bulletX,bulletY)
+EndSub
+
+Sub bulletLife
+  If bulletIsFlying = "true" Then
+    bulletDuration = bulletDuration + 1
+    If bulletX > width-bulletW-rightBorder Or bulletX < leftBorder Or bulletY > height-bulletH-bottomBorder Or bulletY < topBorder Then
+      hideBullet()
+    EndIf
+    If bulletDuration > bulletTimeOfLife*1000/fps Then
+      hideBullet()
+    EndIf
+  EndIf
+EndSub
+
+Sub hideBullet
+  Shapes.HideShape(bullet)
+  bulletSpeedX = 0
+  bulletSpeedY = 0
+  bulletIsFlying = "false"
+  bulletX = 0
+  bulletY = 0
+  Shapes.Move(bullet,bulletX,bulletY)
+EndSub
+
+'=================== GAME OBJECTS ==============
+'=================== GAME OBJECTS ==============
+'=================== GAME OBJECTS ==============
+
+'=================== SPIDER  ==============
+Sub createEnemySpider
+  spiderImg = directory + "/objects/enemy-spider.png"
+  spiders[indexSpider]["width"] = 40
+  spiders[indexSpider]["height"] = 40
+  spiders[indexSpider]["x"] = leftBorder + Math.GetRandomNumber(width - rightBorder-80)
+  spiders[indexSpider]["y"] = topBorder + Math.GetRandomNumber(height - bottomBorder-80)
+  spiders[indexSpider]["speedX"] = 2 - Math.GetRandomNumber(4) 
+  spiders[indexSpider]["speedY"] = 2 - Math.GetRandomNumber(4) 
+  spiders[indexSpider]["spider"] = Shapes.AddImage(spiderImg)
+  Shapes.Move(spiders[indexSpider]["spider"],spiders[indexSpider]["x"],spiders[indexSpider]["y"])
+  indexSpider = indexSpider + 1
+EndSub
+
+Sub moveSpiders
+  For i=1 To Array.GetItemCount(spiders)
+    spiders[i]["x"] = spiders[i]["x"] + spiders[i]["speedX"]
+    spiders[i]["y"] = spiders[i]["y"] + spiders[i]["speedY"]
+    Shapes.Move(spiders[i]["spider"],spiders[i]["x"],spiders[i]["y"])
+  EndFor
+EndSub
+
+Sub checkEdjesSpiders
+  For i=1 To Array.GetItemCount(spiders)
+    If spiders[i]["x"] > width-spiders[i]["width"]-rightBorder Or spiders[i]["x"] < leftBorder Then
+      spiders[i]["speedX"] = spiders[i]["speedX"]*-1
+    EndIf
+    If spiders[i]["y"] > height-spiders[i]["height"]-bottomBorder Or spiders[i]["y"] < topBorder Then
+      spiders[i]["speedY"] = spiders[i]["speedY"]*-1
+    EndIf
+  EndFor
+EndSub
+
+Sub checkCollisionBulletSpider
+  For i=1 To Array.GetItemCount(spiders)
+
+    If bulletX < spiders[i]["x"]+spiders[i]["width"] And bulletX + bulletW > spiders[i]["x"] And bulletY < spiders[i]["y"]+ spiders[i]["height"] And bulletY + bulletH > spiders[i]["y"] Then 
+      ' hide spider
+      Shapes.HideShape(spiders[i]["spider"])
+      spiders[i] = ""
+      ' hide bullet
+      hideBullet()
+      score = score+1
+      updateScore()
+      money = money+1
+      updateMoney()
+    EndIf
+  EndFor
+EndSub
+
+Sub checkCollisionPlayerSpider
+  For i=1 To Array.GetItemCount(spiders)
+
+    If playerX < spiders[i]["x"]+spiders[i]["width"] And playerX + playerW > spiders[i]["x"] And playerY < spiders[i]["y"]+ spiders[i]["height"] And playerY + playerH > spiders[i]["y"] Then 
+      ' hide spider
+      Shapes.HideShape(spiders[i]["spider"])
+      spiders[i] = ""
+      '  damages to player
+      score = score-3
+      updateScore()
+    EndIf
+  EndFor
+EndSub
+
+Sub checkCollisionSpiderDiamond
+  For i=1 To Array.GetItemCount(spiders)
+    For j=1 To Array.GetItemCount(diamonds)
+      If spiders[i]["x"] < diamonds[j]["x"]+diamonds[j]["width"] And spiders[i]["x"] + spiders[i]["width"] > diamonds[j]["x"] And spiders[i]["y"] < diamonds[j]["y"]+ diamonds[j]["height"] And spiders[i]["y"] + spiders[i]["height"] > diamonds[j]["y"] Then 
+        If diamonds[j]["collected"] = "false" Then
+          Shapes.HideShape(diamonds[j]["diamond"])
+          diamonds[j]["collected"] = "true"
+        EndIf
+      EndIf
+    EndFor
+  EndFor
+EndSub
+
+'=================== FIRE  ==============
+Sub createFire
+  fires[indexFire]["x"] = x
+  fires[indexFire]["y"] = y
+  fires[indexFire]["width"] = 40
+  fires[indexFire]["height"] = 40
+  
+  fireImg = directory + "/objects/w11.png"
+  fires[indexFire]["fire"] = Shapes.AddImage(fireImg)
+  Shapes.Move(fires[indexFire]["fire"],fires[indexFire]["x"],fires[indexFire]["y"])
+EndSub
+
+Sub checkCollisionPlayerFire
+  For i=1 To Array.GetItemCount(fires)
+    If playerX < fires[i]["x"]+fires[i]["width"] And playerX + playerW > fires[i]["x"] And playerY < fires[i]["y"]+ fires[i]["height"] And playerY + playerH > fires[i]["y"] Then  
+      score = score - 1
+      updateScore()
+    EndIf
+  EndFor
+EndSub
+
+'=================== DIAMOND  ==============
+Sub createDiamond
+  diamonds[indexDiamond]["x"] = x
+  diamonds[indexDiamond]["y"] = y
+  diamonds[indexDiamond]["collected"] = "false"
+  diamonds[indexDiamond]["width"] = 40
+  diamonds[indexDiamond]["height"] = 40
+  
+  diamondImg = directory + "/objects/w10.png"
+  diamonds[indexDiamond]["diamond"] = Shapes.AddImage(diamondImg)
+  Shapes.Move(diamonds[indexDiamond]["diamond"],diamonds[indexDiamond]["x"],diamonds[indexDiamond]["y"])
+EndSub
+
+Sub checkCollisionPlayerDiamond
+  For i=1 To Array.GetItemCount(diamonds)
+    If playerX < diamonds[i]["x"]+diamonds[i]["width"] And playerX + playerW > diamonds[i]["x"] And playerY < diamonds[i]["y"]+ diamonds[i]["height"] And playerY + playerH > diamonds[i]["y"] Then 
+      If diamonds[i]["collected"] = "false" Then
+        Shapes.HideShape(diamonds[i]["diamond"])
+        diamonds[i]["collected"] = "true"
+        money = money + 10
+        updateMoney()
+      EndIf
+    EndIf
+  EndFor
+EndSub
+
+
+'=================== START THE PROGRAM ==============
+'=================== START THE PROGRAM ==============
+'=================== START THE PROGRAM ==============
+setup()
+While notEnd
+  Program.Delay(1000/fps)
+  loop()
+EndWhile
