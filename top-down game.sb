@@ -6,7 +6,7 @@ Sub setup
   width = 800
   height = 680
   fps = 50
-  moneyPerDiamond = 6
+  moneyPerDiamond = 7
   
   spiders = ""
   indexSpider = 1
@@ -364,6 +364,11 @@ Sub createEnemySpider
   spiders[indexSpider]["height"] = 40
   spiders[indexSpider]["x"] = leftBorder + Math.GetRandomNumber(width - rightBorder-80)
   spiders[indexSpider]["y"] = topBorder + Math.GetRandomNumber(height - bottomBorder-80)
+  ' New spider can't detect with player
+  While Math.Abs(spiders[indexSpider]["x"]-playerX) < 100 And Math.Abs(spiders[indexSpider]["y"]-playerY) < 100
+    spiders[indexSpider]["x"] = leftBorder + Math.GetRandomNumber(width - rightBorder-80)
+    spiders[indexSpider]["y"] = topBorder + Math.GetRandomNumber(height - bottomBorder-80)
+  EndWhile
   spiders[indexSpider]["speedX"] = 2 - Math.GetRandomNumber(4) 
   spiders[indexSpider]["speedY"] = 2 - Math.GetRandomNumber(4) 
   spiders[indexSpider]["spider"] = Shapes.AddImage(spiderImg)
