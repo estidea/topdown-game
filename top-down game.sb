@@ -34,7 +34,7 @@ Sub setup
   createEnemySpider()
   updateScoreText()
   updateMoneyText()
-  updateLifeBulletsText()
+  updateSpeedBulletsText()
   initMenu()
 EndSub
 
@@ -108,8 +108,6 @@ Sub initMenu
   Controls.SetSize(buyBulletBtn,240,40)
   increaseBulletSpeedBtn = Controls.AddButton("Bullet speed (-20)",280,620)
   Controls.SetSize(increaseBulletSpeedBtn,240,40)
-  increaseBulletLifeBtn = Controls.AddButton("Bullet long (-20)",540,620)
-  Controls.SetSize(increaseBulletLifeBtn,240,40)
 EndSub
 
 Controls.ButtonClicked = whichBtn
@@ -133,17 +131,7 @@ Sub whichBtn
       score = score+2
       updateScoreText()
       bulletSpeed = bulletSpeed+1
-    Else 
-    EndIf
-  ElseIf clickedBtn = increaseBulletLifeBtn Then
-    ' increase bullet life
-    If money >= 20 Then
-      money = money - 20
-      updateMoneyText()
-      score = score+2
-      updateScoreText()
-      bulletTimeOfLife = bulletTimeOfLife+0.4
-      updateLifeBulletsText()
+      updateSpeedBulletsText()
     Else 
     EndIf
   EndIf
@@ -177,13 +165,13 @@ Sub updateBulletsText
   Shapes.ShowShape(bulletText)
 EndSub
 
-Sub updateLifeBulletsText
-  Shapes.HideShape(bulletLifeText)
+Sub updateSpeedBulletsText
+  Shapes.HideShape(bulletSpeedText)
   GraphicsWindow.FontSize = 20
   GraphicsWindow.BrushColor = "White"
-  bulletLifeText = Shapes.AddText("Bullet Life: " + bulletTimeOfLife)
-  Shapes.Move(bulletLifeText,440,5)
-  Shapes.ShowShape(bulletLifeText)
+  bulletSpeedText = Shapes.AddText("Bullet Speed: " + bulletSpeed)
+  Shapes.Move(bulletSpeedText,440,5)
+  Shapes.ShowShape(bulletSpeedText)
 EndSub
 
 '=================== GAME WORLD  ==============
