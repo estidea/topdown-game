@@ -36,7 +36,7 @@ Sub setup
   updateScoreText()
   updateMoneyText()
   updateSpeedBulletsText()
-  
+  updateHpMenu()
 EndSub
 
 Sub loop
@@ -70,6 +70,9 @@ Sub loop
   
   If playerHp <= 0 Then
     notEnd = "false"
+    Shapes.HideShape(player)
+    player = Shapes.AddImage(deadPlayerImage)
+    Shapes.Move(player,playerX,playerY)
   EndIf
 EndSub
 
@@ -180,8 +183,19 @@ Sub updateSpeedBulletsText
 EndSub
 
 Sub updateHpMenu
+  xPositionForHpIndicators = width - 40 - playerMaxHealth*40 - (playerMaxHealth-1)*10
+  hpFullImage = directory + "/objects/player-hp-full.png"
+  hpEmptyImage = directory + "/objects/player-hp-empty.png"
   For i=1 To playerMaxHealth 
-    
+    Shapes.HideShape(hearts[i])
+    If playerHp >= i Then
+      hearts[i] = Shapes.AddImage(hpFullImage)
+      Shapes.Move(hearts[i], xPositionForHpIndicators, height-60)
+    Else 
+      hearts[i] = Shapes.AddImage(hpEmptyImage)
+      Shapes.Move(hearts[i], xPositionForHpIndicators, height-60)
+    EndIf
+    xPositionForHpIndicators = xPositionForHpIndicators + 50
   EndFor
 EndSub
 
@@ -245,6 +259,7 @@ EndSub
 '=================== PLAYER  ==============
 Sub createPlayer
   playerMaxHealth = 3
+  deadPlayerImage = directory + "/objects/player-dead.png"
   playerImg = directory + "/objects/player.png"
   playerW = 40
   playerH = 40
@@ -565,7 +580,7 @@ EndSub
 '=================== START THE PROGRAM ==============
 '=================== START THE PROGRAM ==============
 setup()
-While notEnd
+While notEnd="true"
   Program.Delay(1000/fps)
   loop()
 EndWhile
