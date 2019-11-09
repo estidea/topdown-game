@@ -99,10 +99,13 @@ Sub loop
       message = "3 wave!"
       showMessage()
     EndIf
-  ElseIf spidersKilled >=30 Then
+  ElseIf spidersKilled >=1 Then
     victory = "true"
     message = "Victory!"
+    message2 = "Your score = " + score
     showMessage()
+    GraphicsWindow.KeyDown = emptySub
+    GraphicsWindow.MouseDown = emptySub
     notEnd = "false"
   EndIf
 EndSub
@@ -114,8 +117,12 @@ Sub showMessage
   GraphicsWindow.FontSize = "30"
   messageText = Shapes.AddText(message)
   Shapes.Move(messageText, width/2 - 60, (height-bottomBorder)/2)
+  If message2 <> "" Then
+    message2Text = Shapes.AddText(message2)
+    Shapes.Move(message2Text, width/2 - 60 - 40, (height-bottomBorder)/2+30)
+  EndIf
   GraphicsWindow.KeyDown = emptySub
-  Program.Delay(3000)
+  Program.Delay(1000)
   GraphicsWindow.KeyDown = keyboardEvent
   GraphicsWindow.BrushColor = "White"
   Shapes.HideShape(messageText)
@@ -586,6 +593,7 @@ Sub createFire
   fires[indexFire]["height"] = 40
   
   fireImg = directory + "/objects/w11.png"
+  fireUnfiredImg = directory + "/objects/fire-unfire.png"
   fires[indexFire]["fire"] = Shapes.AddImage(fireImg)
   Shapes.Move(fires[indexFire]["fire"],fires[indexFire]["x"],fires[indexFire]["y"])
 EndSub
@@ -593,16 +601,12 @@ EndSub
 Sub checkCollisionPlayerFire
   For i=1 To Array.GetItemCount(fires)
     If playerX < fires[i]["x"]+fires[i]["width"] And playerX + playerW > fires[i]["x"] And playerY < fires[i]["y"]+ fires[i]["height"] And playerY + playerH > fires[i]["y"] Then  
-      playerHp = playerHp - 1
-      TextWindow.WriteLine("1")
-      updateHpMenu()
       Shapes.HideShape(fires[i]["fire"])
-      fireNewImg = directory + "/objects/fire-unfire.png"
-      fires[i]["fire"] = Shapes.AddImage(fireNewImg)
+      fires[i]["fire"] = Shapes.AddImage(fireUnfiredImg)
       Shapes.Move(fires[i]["fire"],fires[i]["x"],fires[i]["y"])
-      TextWindow.WriteLine("2")
       fires[i] = ""
-      TextWindow.WriteLine("3")
+      playerHp = playerHp - 1
+      updateHpMenu()
     EndIf
   EndFor
 EndSub
