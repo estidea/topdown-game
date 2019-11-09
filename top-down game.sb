@@ -6,14 +6,19 @@ Sub setup
   width = 800
   height = 680
   fps = 50
-  moneyPerDiamond = 8
+  moneyPerDiamond = 10
   
   spiders = ""
   indexSpider = 1
   
   score = 0
   money = 0
+  
+  ' game process variables
   globalLvl = 1
+  vave2IsShowed = "false"
+  vave3IsShowed = "false"
+  victory = "false"
   
   ' Массив пауз
   pauses[1] = 4
@@ -37,6 +42,9 @@ Sub setup
   updateMoneyText()
   updateSpeedBulletsText()
   updateHpMenu()
+  
+  message = "1 wave!"
+  showMessage()
 EndSub
 
 Sub loop
@@ -73,9 +81,45 @@ Sub loop
     Shapes.HideShape(player)
     player = Shapes.AddImage(deadPlayerImage)
     Shapes.Move(player,playerX,playerY)
+    message = "You dead!"
+    showMessage()
+  EndIf
+  
+  If indexSpider >= 10 And indexSpider < 20 Then
+    globalLvl = 2
+    If vave2IsShowed = "false" Then
+      vave2IsShowed = "true"
+      message = "2 wave!"
+      showMessage()
+    EndIf
+  ElseIf indexSpider >=20 And indexSpider < 30 Then
+    globalLvl = 3
+    If vave3IsShowed = "false" Then
+      vave3IsShowed = "true"
+      message = "3 wave!"
+      showMessage()
+    EndIf
+  ElseIf spidersKilled >=30 Then
+    victory = "true"
+    message = "Victory!"
+    showMessage()
+    notEnd = "false"
   EndIf
 EndSub
 
+'=================== MESSAGES  ==============
+'=================== MESSAGES  ==============
+Sub showMessage
+  GraphicsWindow.BrushColor = "#A4EF06"
+  GraphicsWindow.FontSize = "30"
+  messageText = Shapes.AddText(message)
+  Shapes.Move(messageText, width/2 - 60, (height-bottomBorder)/2)
+  GraphicsWindow.KeyDown = emptySub
+  Program.Delay(3000)
+  GraphicsWindow.KeyDown = keyboardEvent
+  GraphicsWindow.BrushColor = "White"
+  Shapes.HideShape(messageText)
+EndSub
 
 '=================== EVENT LISTENERS  ==============
 '=================== EVENT LISTENERS  ==============
@@ -97,6 +141,9 @@ Sub keyboardEvent
     playerX = playerX + playerSpdX
     movePlayer()
   EndIf
+EndSub
+
+Sub emptySub
 EndSub
 
 GraphicsWindow.MouseDown = mouseEvent
@@ -433,6 +480,7 @@ Sub checkCollisionBulletSpider
         ' hide spider
         Shapes.HideShape(spiders[i]["spider"])
         spiders[i] = ""
+        spidersKilled = spidersKilled + 1
       ElseIf spiders[i]["lvl"] = 2 Then
         If spiders[i]["hp"] = 2 Then
           ' Spider is damaged
@@ -453,6 +501,7 @@ Sub checkCollisionBulletSpider
           updateMoneyText()
           Shapes.HideShape(spiders[i]["spider"])
           spiders[i] = ""
+          spidersKilled = spidersKilled + 1
         EndIf
       Else 
         If spiders[i]["hp"] = 3 Then
@@ -483,6 +532,7 @@ Sub checkCollisionBulletSpider
           updateMoneyText()
           Shapes.HideShape(spiders[i]["spider"])
           spiders[i] = ""
+          spidersKilled = spidersKilled + 1
         EndIf
       EndIf
     EndIf
