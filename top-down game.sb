@@ -593,8 +593,16 @@ EndSub
 Sub checkCollisionPlayerFire
   For i=1 To Array.GetItemCount(fires)
     If playerX < fires[i]["x"]+fires[i]["width"] And playerX + playerW > fires[i]["x"] And playerY < fires[i]["y"]+ fires[i]["height"] And playerY + playerH > fires[i]["y"] Then  
-      score = score - 1
-      updateScoreText()
+      playerHp = playerHp - 1
+      TextWindow.WriteLine("1")
+      updateHpMenu()
+      Shapes.HideShape(fires[i]["fire"])
+      fireNewImg = directory + "/objects/fire-unfire.png"
+      fires[i]["fire"] = Shapes.AddImage(fireNewImg)
+      Shapes.Move(fires[i]["fire"],fires[i]["x"],fires[i]["y"])
+      TextWindow.WriteLine("2")
+      fires[i] = ""
+      TextWindow.WriteLine("3")
     EndIf
   EndFor
 EndSub
