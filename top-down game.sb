@@ -30,12 +30,13 @@ Sub setup
   GraphicsWindow.BackgroundColor = "#472D3C"
   
   initWorld()
+  initMenu()
   createPlayer()
   createEnemySpider()
   updateScoreText()
   updateMoneyText()
   updateSpeedBulletsText()
-  initMenu()
+  
 EndSub
 
 Sub loop
@@ -65,6 +66,10 @@ Sub loop
     randomDiamondIndex = Math.GetRandomNumber(Array.GetItemCount(diamonds))
     diamonds[randomDiamondIndex]["collected"] = "false"
     Shapes.ShowShape(diamonds[randomDiamondIndex]["diamond"])
+  EndIf
+  
+  If playerHp <= 0 Then
+    notEnd = "false"
   EndIf
 EndSub
 
@@ -137,7 +142,7 @@ Sub whichBtn
   EndIf
 EndSub
 
-'=================== TEXT STATES (BULLETS, SCORE, MONEY)  ==============
+'===================  STATES (BULLETS, SCORE, MONEY, HP)  ==============
 Sub updateScoreText
   Shapes.HideShape(scoreText)
   GraphicsWindow.FontSize = 20
@@ -172,6 +177,12 @@ Sub updateSpeedBulletsText
   bulletSpeedText = Shapes.AddText("Bullet Speed: " + bulletSpeed)
   Shapes.Move(bulletSpeedText,440,5)
   Shapes.ShowShape(bulletSpeedText)
+EndSub
+
+Sub updateHpMenu
+  For i=1 To playerMaxHealth 
+    
+  EndFor
 EndSub
 
 '=================== GAME WORLD  ==============
@@ -233,11 +244,13 @@ EndSub
 '=================== PLAYER  ==============
 '=================== PLAYER  ==============
 Sub createPlayer
+  playerMaxHealth = 3
   playerImg = directory + "/objects/player.png"
   playerW = 40
   playerH = 40
   playerX = 40
   playerY = 40 
+  playerHp = 3
   playerAimAngle = 0
   playerSpdY = 20
   playerSpdX = 20
@@ -470,8 +483,8 @@ Sub checkCollisionPlayerSpider
       Shapes.HideShape(spiders[i]["spider"])
       spiders[i] = ""
       '  damages to player
-      score = score-3
-      updateScoreText()
+      playerHp = playerHp - 1
+      updateHpMenu()
     EndIf
   EndFor
 EndSub
