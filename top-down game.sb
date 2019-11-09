@@ -6,13 +6,15 @@ Sub setup
   width = 800
   height = 680
   fps = 50
-  moneyPerDiamond = 7
+  moneyPerDiamond = 8
   
   spiders = ""
   indexSpider = 1
   
   score = 0
   money = 0
+  globalLvl = 1
+  
   ' Массив пауз
   pauses[1] = 4
   pauses[2] = 5
@@ -359,7 +361,7 @@ EndSub
 
 '=================== SPIDER  ==============
 Sub createEnemySpider
-  spiderImg = directory + "/objects/enemy-spider.png"
+  spiderImg = directory + "/objects/enemy-spider-" + globalLvl + ".png"
   spiders[indexSpider]["width"] = 40
   spiders[indexSpider]["height"] = 40
   spiders[indexSpider]["x"] = leftBorder + Math.GetRandomNumber(width - rightBorder-80)
@@ -369,8 +371,15 @@ Sub createEnemySpider
     spiders[indexSpider]["x"] = leftBorder + Math.GetRandomNumber(width - rightBorder-80)
     spiders[indexSpider]["y"] = topBorder + Math.GetRandomNumber(height - bottomBorder-80)
   EndWhile
-  spiders[indexSpider]["speedX"] = 2 - Math.GetRandomNumber(4) 
-  spiders[indexSpider]["speedY"] = 2 - Math.GetRandomNumber(4) 
+  ' Hp
+  spiders[indexSpider]["lvl"] = globalLvl
+  spiders[indexSpider]["hp"] = globalLvl
+  spiders[indexSpider]["speedX"] = globalLvl+1 - Math.GetRandomNumber((globalLvl+1)*2) 
+  spiders[indexSpider]["speedY"] = globalLvl+1 - Math.GetRandomNumber((globalLvl+1)*2) 
+  While spiders[indexSpider]["speedX"] = 0 Or spiders[indexSpider]["speedY"] = 0
+    spiders[indexSpider]["speedX"] = 2 - Math.GetRandomNumber(4) 
+    spiders[indexSpider]["speedY"] = 2 - Math.GetRandomNumber(4) 
+  EndWhile
   spiders[indexSpider]["spider"] = Shapes.AddImage(spiderImg)
   Shapes.Move(spiders[indexSpider]["spider"],spiders[indexSpider]["x"],spiders[indexSpider]["y"])
   indexSpider = indexSpider + 1
@@ -433,6 +442,17 @@ Sub checkCollisionSpiderDiamond
         If diamonds[j]["collected"] = "false" Then
           Shapes.HideShape(diamonds[j]["diamond"])
           diamonds[j]["collected"] = "true"
+          ' Promote the spider
+          If spiders[i]["lvl"] < 3 Then
+            spiders[i]["lvl"] = spiders[i]["lvl"] + 1
+            spiderNewImg = directory + "/objects/enemy-spider-" + spiders[i]["lvl"] + ".png"
+            
+            spiders[i]["hp"] = spiders[i]["hp"] + 1
+            spiders[i]["speedX"] = spiders[i]["speedX"]*1.3
+            spiders[i]["speedY"] = spiders[i]["speedY"]*1.3 
+            Shapes.HideShape(spiders[i]["spider"])
+            spiders[i]["spider"] = Shapes.AddImage(spiderNewImg)
+          EndIf
         EndIf
       EndIf
     EndFor
