@@ -29,8 +29,9 @@ Sub setup
   initWorld()
   createPlayer()
   createEnemySpider()
-  updateScore()
-  updateMoney()
+  updateScoreText()
+  updateMoneyText()
+  updateLifeBulletsText()
   initMenu()
 EndSub
 
@@ -116,18 +117,18 @@ Sub whichBtn
     ' buy bullet
     If money >= 3 Then
       money = money - 3
-      updateMoney()
+      updateMoneyText()
       bulletNumber = bulletNumber + 1
-      updateBullets()
+      updateBulletsText()
     Else 
     EndIf
   ElseIf clickedBtn = increaseBulletSpeedBtn Then
     ' increase bullet speed
     If money >= 20 Then
       money = money - 20
-      updateMoney()
+      updateMoneyText()
       score = score+2
-      updateScore()
+      updateScoreText()
       bulletSpeed = bulletSpeed+1
     Else 
     EndIf
@@ -135,17 +136,18 @@ Sub whichBtn
     ' increase bullet life
     If money >= 20 Then
       money = money - 20
-      updateMoney()
+      updateMoneyText()
       score = score+2
-      updateScore()
+      updateScoreText()
       bulletTimeOfLife = bulletTimeOfLife+0.4
+      updateLifeBulletsText()
     Else 
     EndIf
   EndIf
 EndSub
 
 '=================== TEXT STATES (BULLETS, SCORE, MONEY)  ==============
-Sub updateScore
+Sub updateScoreText
   Shapes.HideShape(scoreText)
   GraphicsWindow.FontSize = 20
   GraphicsWindow.BrushColor = "White"
@@ -154,7 +156,7 @@ Sub updateScore
   Shapes.ShowShape(scoreText)
 EndSub
 
-Sub updateMoney
+Sub updateMoneyText
   Shapes.HideShape(moneyText)
   GraphicsWindow.FontSize = 20
   GraphicsWindow.BrushColor = "White"
@@ -163,13 +165,22 @@ Sub updateMoney
   Shapes.ShowShape(moneyText)
 EndSub
 
-Sub updateBullets
+Sub updateBulletsText
   Shapes.HideShape(bulletText)
   GraphicsWindow.FontSize = 20
   GraphicsWindow.BrushColor = "White"
   bulletText = Shapes.AddText("Bullets: " + bulletNumber)
   Shapes.Move(bulletText,230,5)
   Shapes.ShowShape(bulletText)
+EndSub
+
+Sub updateLifeBulletsText
+  Shapes.HideShape(bulletLifeText)
+  GraphicsWindow.FontSize = 20
+  GraphicsWindow.BrushColor = "White"
+  bulletLifeText = Shapes.AddText("Bullet Life: " + bulletTimeOfLife)
+  Shapes.Move(bulletLifeText,440,5)
+  Shapes.ShowShape(bulletLifeText)
 EndSub
 
 '=================== GAME WORLD  ==============
@@ -240,7 +251,7 @@ Sub createPlayer
   Shapes.Move(player,playerX,playerY)
   
   createBullet()
-  updateBullets()
+  updateBulletsText()
 EndSub
 
 Sub movePlayer
@@ -305,7 +316,7 @@ Sub performAttack
     bulletSpeedX = Math.cos(angle/180*Math.Pi)*bulletSpeed
     bulletSpeedY = Math.Sin(angle/180*Math.Pi)*bulletSpeed
     Shapes.ShowShape(bullet)
-    updateBullets()
+    updateBulletsText()
    EndIf
 EndSub
 
@@ -384,9 +395,9 @@ Sub checkCollisionBulletSpider
       ' hide bullet
       hideBullet()
       score = score+1
-      updateScore()
+      updateScoreText()
       money = money+1
-      updateMoney()
+      updateMoneyText()
     EndIf
   EndFor
 EndSub
@@ -400,7 +411,7 @@ Sub checkCollisionPlayerSpider
       spiders[i] = ""
       '  damages to player
       score = score-3
-      updateScore()
+      updateScoreText()
     EndIf
   EndFor
 EndSub
@@ -434,7 +445,7 @@ Sub checkCollisionPlayerFire
   For i=1 To Array.GetItemCount(fires)
     If playerX < fires[i]["x"]+fires[i]["width"] And playerX + playerW > fires[i]["x"] And playerY < fires[i]["y"]+ fires[i]["height"] And playerY + playerH > fires[i]["y"] Then  
       score = score - 1
-      updateScore()
+      updateScoreText()
     EndIf
   EndFor
 EndSub
@@ -459,7 +470,7 @@ Sub checkCollisionPlayerDiamond
         Shapes.HideShape(diamonds[i]["diamond"])
         diamonds[i]["collected"] = "true"
         money = money + 10
-        updateMoney()
+        updateMoneyText()
       EndIf
     EndIf
   EndFor
