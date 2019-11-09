@@ -406,20 +406,73 @@ EndSub
 
 Sub checkCollisionBulletSpider
   For i=1 To Array.GetItemCount(spiders)
-
     If bulletX < spiders[i]["x"]+spiders[i]["width"] And bulletX + bulletW > spiders[i]["x"] And bulletY < spiders[i]["y"]+ spiders[i]["height"] And bulletY + bulletH > spiders[i]["y"] Then 
-      ' hide spider
-      Shapes.HideShape(spiders[i]["spider"])
-      spiders[i] = ""
-      ' hide bullet
-      hideBullet()
-      score = score+1
-      updateScoreText()
-      money = money+1
-      updateMoneyText()
+      If spiders[i]["lvl"] = 1 Then
+        ' hide bullet
+        hideBullet()
+        score = score+1
+        updateScoreText()
+        money = money+spiders[i]["lvl"]*2
+        updateMoneyText()
+        ' hide spider
+        Shapes.HideShape(spiders[i]["spider"])
+        spiders[i] = ""
+      ElseIf spiders[i]["lvl"] = 2 Then
+        If spiders[i]["hp"] = 2 Then
+          ' Spider is damaged
+          hideBullet()
+          spiders[i]["hp"] = spiders[i]["hp"] - 1
+          spiders[i]["speedX"] = spiders[i]["speedX"]*0.6
+          spiders[i]["speedY"] = spiders[i]["speedY"]*0.6
+          newDamagedImage = directory + "/objects/enemy-spider-damaged-" + spiders[i]["hp"] + "-" + spiders[i]["lvl"] + ".png"
+          Shapes.HideShape(spiders[i]["spider"])
+          spiders[i]["spider"] = Shapes.AddImage(newDamagedImage)
+        Else
+          ' Spider is killed
+          ' hide bullet
+          hideBullet()
+          score = score+2
+          updateScoreText()
+          money = money+spiders[i]["lvl"]*2
+          updateMoneyText()
+          Shapes.HideShape(spiders[i]["spider"])
+          spiders[i] = ""
+        EndIf
+      Else 
+        If spiders[i]["hp"] = 3 Then
+          ' Spider is damaged
+          hideBullet()
+          spiders[i]["hp"] = spiders[i]["hp"] - 1
+          spiders[i]["speedX"] = spiders[i]["speedX"]*0.7
+          spiders[i]["speedY"] = spiders[i]["speedY"]*0.7
+          newDamagedImage = directory + "/objects/enemy-spider-damaged-" + spiders[i]["hp"] + "-" + spiders[i]["lvl"] + ".png"
+          Shapes.HideShape(spiders[i]["spider"])
+          spiders[i]["spider"] = Shapes.AddImage(newDamagedImage)
+        ElseIf spiders[i]["hp"] = 2 Then
+          ' Spider is almost dead
+          hideBullet()
+          spiders[i]["hp"] = spiders[i]["hp"] - 1
+          spiders[i]["speedX"] = spiders[i]["speedX"]*0.7
+          spiders[i]["speedY"] = spiders[i]["speedY"]*0.7
+          newDamagedImage = directory + "/objects/enemy-spider-damaged-" + spiders[i]["hp"] + "-" + spiders[i]["lvl"] + ".png"
+          Shapes.HideShape(spiders[i]["spider"])
+          spiders[i]["spider"] = Shapes.AddImage(newDamagedImage)
+        Else
+          ' Spider is killed
+          ' hide bullet
+          hideBullet()
+          score = score+3
+          updateScoreText()
+          money = money+spiders[i]["lvl"]*2
+          updateMoneyText()
+          Shapes.HideShape(spiders[i]["spider"])
+          spiders[i] = ""
+        EndIf
+      EndIf
     EndIf
   EndFor
 EndSub
+
 
 Sub checkCollisionPlayerSpider
   For i=1 To Array.GetItemCount(spiders)
