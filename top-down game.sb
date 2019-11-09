@@ -6,6 +6,7 @@ Sub setup
   width = 800
   height = 680
   fps = 50
+  moneyPerDiamond = 6
   
   spiders = ""
   indexSpider = 1
@@ -204,9 +205,18 @@ Sub fillWorld
   x = 40
   y = 40
   For i=1 To 13
+    ' Create random index for diamond in every world row
+    randomIndexForDiamond = Math.GetRandomNumber(18)
     For j=1 To 18
+      If j = randomIndexForDiamond Then
+          ' diamond
+          fillWorldImg = directory + "/objects/w10.png"
+          createDiamond()
+          indexDiamond = indexDiamond + 1
+      EndIf
       If i=13 And j=18 Then
       ElseIf i=1 And j=1 Then
+      ElseIf j = randomIndexForDiamond Then
       Else
         probability = Math.GetRandomNumber(100)
         If probability <= 5 Then
@@ -214,11 +224,6 @@ Sub fillWorld
           fillWorldImg = directory + "/objects/w11.png"
           createFire()
           indexFire = indexFire + 1
-        ElseIf probability > 5 And probability <= 8 Then
-          ' diamond
-          fillWorldImg = directory + "/objects/w10.png"
-          createDiamond()
-          indexDiamond = indexDiamond + 1
         Else
           ' ordinary ground
           randomNum = Math.GetRandomNumber(9)
@@ -469,7 +474,7 @@ Sub checkCollisionPlayerDiamond
       If diamonds[i]["collected"] = "false" Then
         Shapes.HideShape(diamonds[i]["diamond"])
         diamonds[i]["collected"] = "true"
-        money = money + 10
+        money = money + moneyPerDiamond
         updateMoneyText()
       EndIf
     EndIf
