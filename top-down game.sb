@@ -19,6 +19,7 @@ Sub setup
   vave2IsShowed = "false"
   vave3IsShowed = "false"
   victory = "false"
+  pauseMenu = "false"
   
   ' Массив пауз
   pauses[1] = 4
@@ -42,6 +43,7 @@ Sub setup
   updateMoneyText()
   updateSpeedBulletsText()
   updateHpMenu()
+  showCursor()
   
   message = "1 wave!"
   showMessage()
@@ -60,6 +62,7 @@ Sub loop
   checkCollisionSpiderDiamond()
   
   frames = frames+1
+  
   If Math.Remainder(frames,randomPause*fps) = 0 Then
     createEnemySpider()
     randomPause = pauses[Math.GetRandomNumber(4)]
@@ -99,7 +102,7 @@ Sub loop
       message = "3 wave!"
       showMessage()
     EndIf
-  ElseIf spidersKilled >=1 Then
+  ElseIf spidersKilled >=30 Then
     victory = "true"
     message = "Victory!"
     message2 = "Your score = " + score
@@ -107,6 +110,10 @@ Sub loop
     GraphicsWindow.KeyDown = emptySub
     GraphicsWindow.MouseDown = emptySub
     notEnd = "false"
+  EndIf
+  
+  If frames >= messageTimestamp + 50 Then
+    Shapes.HideShape(messageText)
   EndIf
 EndSub
 
@@ -121,11 +128,7 @@ Sub showMessage
     message2Text = Shapes.AddText(message2)
     Shapes.Move(message2Text, width/2 - 60 - 40, (height-bottomBorder)/2+30)
   EndIf
-  GraphicsWindow.KeyDown = emptySub
-  Program.Delay(2000)
-  GraphicsWindow.KeyDown = keyboardEvent
-  GraphicsWindow.BrushColor = "White"
-  Shapes.HideShape(messageText)
+  messageTimestamp = frames
 EndSub
 
 '=================== EVENT LISTENERS  ==============
@@ -135,18 +138,29 @@ GraphicsWindow.KeyDown = keyboardEvent
 
 Sub keyboardEvent
   lastKey = GraphicsWindow.LastKey
-  If lastKey = "W" Then
+  If lastKey = "W" And notEnd = "true" Then
     playerY = playerY - playerSpdY
     movePlayer()
-  ElseIf lastKey = "S" Then
+  ElseIf lastKey = "S" And notEnd = "true" Then
     playerY = playerY + playerSpdY
     movePlayer()
-  ElseIf lastKey = "A" Then
+  ElseIf lastKey = "A" And notEnd = "true" Then
     playerX = playerX - playerSpdX
     movePlayer()
-  ElseIf lastKey = "D" Then
+  ElseIf lastKey = "D" And notEnd = "true" Then
     playerX = playerX + playerSpdX
     movePlayer()
+  ElseIf lastKey = "Space" And pauseMenu = "false" Then
+    pauseMenu = "true"
+    notEnd = "false"
+    GraphicsWindow.BrushColor = "#CFC6B8"
+    GraphicsWindow.FontSize = "30"
+    messageText = Shapes.AddText("[pause]")
+    Shapes.Move(messageText, width/2 - 60, (height-bottomBorder)/2)
+  ElseIf lastKey = "Space" And pauseMenu = "true" Then
+    pauseMenu = "false"
+    notEnd = "true"
+    Shapes.HideShape(message2Text)
   EndIf
 EndSub
 
@@ -159,6 +173,37 @@ Sub mouseEvent
   mouseX = GraphicsWindow.MouseX
   mouseY = GraphicsWindow.MouseY
   performAttack()
+EndSub
+
+GraphicsWindow.MouseMove = moveCursor
+
+Sub showCursor
+  
+  cursorTargetImg = directory + "/objects/cursor-target.png"
+  cursorStandartImg = directory + "/objects/cursor-standart.png"
+  cursor = Shapes.AddImage(cursorTargetImg)
+  cursorActive = "target"
+  Mouse.HideCursor()
+EndSub
+
+Sub moveCursor
+  mX = GraphicsWindow.MouseX
+  mY = GraphicsWindow.MouseY
+  If mX >= leftBorder And mX <= width - rightBorder And mY >= topBorder And mY <= height - bottomBorder And cursorActive = "standart" Then
+    Shapes.HideShape(cursor)
+    Mouse.HideCursor()
+    cursorActive = "target"
+    cursor = Shapes.AddImage(cursorTargetImg)
+  EndIf
+  If cursorActive = "target" Then
+    If mX < leftBorder Or mX > width - rightBorder Or mY < topBorder Or mY > height - bottomBorder Then
+      Shapes.HideShape(cursor)
+      Mouse.ShowCursor()
+      cursorActive = "standart"
+      'cursor = Shapes.AddImage(cursorStandartImg)
+    EndIf
+  EndIf
+  Shapes.Move(cursor,mX-20,mY-20)
 EndSub
 
 '=================== SKILLS MENU ==============
@@ -642,7 +687,9 @@ EndSub
 '=================== START THE PROGRAM ==============
 '=================== START THE PROGRAM ==============
 setup()
-While notEnd="true"
-  Program.Delay(1000/fps)
-  loop()
+While "true"
+  if notEnd="true" Then
+    Program.Delay(1000/fps)
+    loop()
+  EndIf
 EndWhile
