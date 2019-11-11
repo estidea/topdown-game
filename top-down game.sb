@@ -306,7 +306,7 @@ Sub initWorld
   leftBorder = 40
   rightBorder = 40
   bottomBorder = 120
-  worldImg = directory + "/world.png"
+  worldImg = directory + "/objects/world.png"
   world = Shapes.AddImage(worldImg)
   fillWorld()
 EndSub
